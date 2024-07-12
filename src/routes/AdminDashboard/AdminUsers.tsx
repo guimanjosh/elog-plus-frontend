@@ -16,6 +16,7 @@ import { useQueryClient } from "@tanstack/react-query";
 //useUsers hook?
 import useUsers from "../../hooks/useUsers";
 
+
 export default function AdminUsers(){
   
 
@@ -31,8 +32,12 @@ export default function AdminUsers(){
   ? userMap[selectedUserId]
   : undefined;
 
+  function searchFor(value: string) {
+    setUserSearch(value);
+  }
+
   const onSave = useCallback(() => {
-    toast.success("Saved logbook");
+    toast.success("Saved user authorization.");
   }, []);
 
   const navigate = useNavigate();
@@ -40,11 +45,9 @@ export default function AdminUsers(){
   
   const outlet = useOutlet();
 
-  
-  function searchFor(value: string) {
-    setUserSearch(value);
-
-  }
+  const saveUserAuthorization = useCallback(async () =>{
+    
+  },[]);
 
   return (
     <>

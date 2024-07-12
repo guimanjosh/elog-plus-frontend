@@ -1,69 +1,96 @@
 import { create } from 'zustand';
-import { fetch } from "."; 
-import { AuthorizationType } from './logbooks';
+import { fetch } from ".";
+import {User} from "../api"
+import { AuthorizationType, LogbookWithAuth } from './logbooks';
 
 
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  permissions: AuthorizationType[];
-}
+// export interface User {
+//   id: string;
+//   name: string;
+//   email: string;
+//   permissions: AuthorizationType[];
+// }
 
-interface UsersState {
-  users: Record<string, User>; 
-  addUser: (user: User) => void; 
-  removeUser: (userId: string) => void; 
-  updateUserPermissions: (userId: string, permissions: AuthorizationType[]) => void;
-}
 
-export interface UserAuthorization {
+export interface UserWithAuth{
   logbook: string;
   authorizationType: AuthorizationType;
 }
 
-export interface UserWithAuth extends User {
-  authorizations: UserAuthorization[];
+// export interface UserWithAuth extends User {
+//   authorizations: UserLogbookAuthorization[];
+// }
+
+
+export async function createUserAuth(userID: string, logbookID: string | null, authorizationType: string) {
+  return await fetch(`v1/logbooks/auth/user`, {
+    method: "POST",
+    body: { userID, logbookID, authorizationType },
+  });
 }
 
-export async function updateUser(user: UserWithAuth) {
-    return await fetch(`v1/users/${user.id}`, {
+export async function updateUserAuth(userID: string, logbookID: string, authorizationType: string) {
+  return await fetch(`v1/logbook/auth/user/${userID}`, {
       method: "PUT",
-      body: user,
+      body: {
+        logbookID : logbookID,
+        authorizationType
+      }
     });
   }
 
-export const useUsersStore = create<UsersState>((set) => ({
-  users: {},
-  addUser(user) {
-    set(state => ({
-      users: {
-        ...state.users,
-        [user.id]: user,
-      },
-    }));
-  },
-  removeUser(userId) {
-    set(state => {
-      const { [userId]: removedUser, ...restUsers } = state.users;
-      return { users: restUsers };
-    });
-  },
-  updateUserPermissions(userId, permissions) {
-    set(state => {
-      if (!state.users[userId]) return state;
+export async function removeUserAuth( user : User, logbook : LogbookWithAuth){
+    return await fetch(`v1/logbook/auth/user/${user.uid}`, {
+      method: "DELETE",
+    })
+}
 
-      const updatedUser = {
-        ...state.users[userId],
-        permissions: [...permissions],
-      };
+// interface UsersState {
+//   users: Record<string, User>;
+   
+//   addUserAuth: (user: User) => void; 
+//   removeUser: (userId: string) => void; 
+//   updateUserPermissions: (userId: string, permissions: AuthorizationType[]) => void;
+// }
 
-      return {
-        users: {
-          ...state.users,
-          [userId]: updatedUser,
-        },
-      };
-    });
-  },
-}));
+// export interface UserFormsState{
+//   users: Record<string, User>;
+//   addUserAuth: (user: User) => void; 
+//   removeUser: (userId: string) => void; 
+//   updateUserPermissions: (userId: string, permissions: AuthorizationType[]) => void;
+// }
+
+// export const useUsersStore = create<UserFormsState>((set, get) => ({
+//   users: {},
+//   addUserAuth(user) {
+//     set(state => ({
+//       users: {
+//         ...state.users,
+//         [user.uid]: user,
+//       },
+//     }));
+//   },
+//   removeUser(userId) {
+//     set(state => {
+//       const { [userId]: removedUser, ...restUsers } = state.users;
+//       return { users: restUsers };
+//     });
+//   },
+//   updateUserPermissions(userId : string, permissions) {
+//     set(state => {
+//       if (!state.users[userId]) return state;
+
+//       const updatedUser = {
+//         ...state.users[userId],
+//         permissions: [...permissions],
+//       };
+
+//       return {
+//         users: {
+//           ...state.users,
+//           [userId]: updatedUser,
+//         },
+//       };
+//     });
+//   },
+// }));

@@ -2,11 +2,13 @@ import { FormEvent, useState } from "react";
 import { twJoin } from "tailwind-merge";
 import { useQueryClient } from "@tanstack/react-query";
 import {
-  UserAuthorization,
+  UserLogbookAuthorization,
   ServerError,
-  updateUser,
+  createUserAuth,
   AuthorizationType,
-  UserWithAuth,
+  User,
+  Logbook,
+  UserWithAuth
 } from "../api";
 import { Button, IconButton } from "./base";
 import { useUserFormsStore } from "../userFormsStore";
@@ -15,7 +17,7 @@ import Select from "./Select";
 import useLogbooks from "../hooks/useLogbooks";
 
 interface Props {
-  user: UserWithAuth;
+  user: User;
   onSave: () => void;
 }
 
@@ -27,12 +29,17 @@ export default function UserForm({ user, onSave }: Props) {
   const [form, setForm, removeForm] = useUserFormsStore((state) =>
     state.startEditing(user)
   );
+
+  const currentUser : User = user;
+  //Test 1 logbook
+  // const logbook : Logbook = null;
+
   const queryClient = useQueryClient();
 
   const [newLogbookAuthorization, setNewLogbookAuthorization] = useState<string | null>(null);
   const [logbookSearch, setLogbookSearch] = useState("");
 
-  const { logbooks, isLoading: isLogbooksLoading } = useLogbooks({ search: logbookSearch });
+  const { logbooks, isLoading: isLogbooksLoading } = useLogbooks({});
 
   const validators = {
     name: () => Boolean(form.name),
@@ -70,26 +77,26 @@ export default function UserForm({ user, onSave }: Props) {
       return;
     }
 
-    const resolvedAuthorization = form.authorizations.map((authorization) => {
-      if (authorization.id) {
-        return authorization;
-      }
+    // const resolvedAuthorization = form.authorizations.map((authorization) => {
+    //   if (authorization.id) {
+    //     return authorization;
+    //   }
 
-      return (
-        user.authorizations.find(
-          ({ logbook }) => logbook === authorization.logbook
-        ) || authorization
-      );
-    });
+    //   return (
+    //     user.authorizations.find(
+    //       ({ logbook }) => logbook === authorization.logbook
+    //     ) || authorization
+    //   );
+    // });
 
-    const userUpdation: UserAuthorization = {
-      id: form.id,
-      name: form.name,
-      authorization: resolvedAuthorization,
-    };
+    
+    // const userUpdation: UserLogbookAuthorization = {
+    //   logbook: form.name,
+    //   authorizationType: DEFAULT_AUTHORIZATION,
+    // };
 
     try {
-      await updateUser(userUpdation);
+      await createUserAuth(currentUser.uid, newLogbookAuthorization, DEFAULT_AUTHORIZATION);
 
       await queryClient.invalidateQueries({ queryKey: ["users"] });
 

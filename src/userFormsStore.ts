@@ -1,40 +1,42 @@
 import { create } from 'zustand';
-import { UserAuthorization } from './api';
+import { UserLogbookAuthorization, User } from './api';
 
 
 interface UserForm {
   mail: string;
-  authorizations: UserAuthorization[];
+  authorizations: UserLogbookAuthorization[];
 }
 
 interface UserFormsState {
   forms: Record<string, UserForm>;
   startEditing: (
-    mail: string
+    // mail: string
+    user: User
   ) => [UserForm, (newValue: UserForm) => void, () => void];
-  removeForm: (mail: string) => void; 
+  removeForm: (userID: string) => void; 
   upsertForm: (newValue: UserForm) => void; 
 }
 
 export const useUserFormsStore = create<UserFormsState>((set, get) => ({
   forms: {},
-  startEditing(mail) {
+  startEditing(user) {
     const state = get();
-    const form = state.forms[mail] || { mail, authorizations: [] };
+    // const form = state.forms[mail] || { mail, authorizations: [] };
+    const form = state.forms[user.uid] || { user, authorizations: [] };
 
     return [
       form,
       (newValue: UserForm) => {
         if (JSON.stringify(newValue) === JSON.stringify(state.forms[mail])) {
-          state.removeForm(mail);
+          state.removeForm(user.uid);
         } else {
           state.upsertForm(newValue);
         }
       },
-      () => state.removeForm(mail),
+      () => state.removeForm(user.uid),
     ];
   },
-  upsertForm(newValue) {
+  upsertForm(newValue: UserForm) {
     set(({ forms }) => ({
       forms: {
         ...forms,
